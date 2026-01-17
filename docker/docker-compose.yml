@@ -1,0 +1,16 @@
+name: cortexia
+
+include:
+  - docker-compose.foundation.yml
+  - docker-compose.observability.yml
+  - docker-compose.storage.yml
+
+networks:
+  cortexia-net:
+    driver: bridge
+
+volumes:
+  grafana-data:
+  minio-data:
+  qdrant-data:
+  neo4j-data:

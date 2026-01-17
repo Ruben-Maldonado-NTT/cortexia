@@ -1,0 +1,35 @@
+services:
+  cortexia-prometheus:
+    image: prom/prometheus:v2.50.1
+    container_name: cortexia-prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.route-prefix=/prometheus"
+      - "--web.external-url=/prometheus"
+    volumes:
+      - ../foundation/observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    networks:
+      - cortexia-net
+    restart: unless-stopped
+
+  cortexia-grafana:
+    image: grafana/grafana:10.3.1
+    container_name: cortexia-grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_SERVER_DOMAIN=localhost
+      - GF_SERVER_ROOT_URL=http://localhost:${PROXY_PORT:-8088}/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ../foundation/observability/grafana/dashboards:/etc/grafana/provisioning/dashboards
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    networks:
+      - cortexia-net
+    depends_on:
+      - cortexia-prometheus
+    restart: unless-stopped

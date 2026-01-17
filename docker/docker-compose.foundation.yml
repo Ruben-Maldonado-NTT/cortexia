@@ -1,0 +1,11 @@
+services:
+  cortexia-proxy:
+    image: nginx:1.25-alpine
+    container_name: cortexia-proxy
+    ports:
+      - "${PROXY_PORT:-8088}:80"
+    volumes:
+      - ../foundation/reverse-proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - cortexia-net
+    restart: unless-stopped
