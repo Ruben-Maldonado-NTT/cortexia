@@ -1,0 +1,69 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "CortexIA Agent Metadata",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string",
+            "description": "Unique identifier for the agent (slug format)",
+            "pattern": "^[a-z0-9-]+$"
+        },
+        "name": {
+            "type": "string",
+            "description": "Display name of the agent"
+        },
+        "version": {
+            "type": "string",
+            "description": "Semantic version of the agent",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "description": {
+            "type": "string",
+            "description": "Natural language description of what the agent does"
+        },
+        "capabilities": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "List of capabilities for semantic search (e.g., 'can write python code', 'can query sql')"
+        },
+        "interface": {
+            "type": "object",
+            "properties": {
+                "input_schema": {
+                    "type": "object",
+                    "description": "JSON Schema for agent input"
+                },
+                "output_schema": {
+                    "type": "object",
+                    "description": "JSON Schema for agent output"
+                }
+            },
+            "required": [
+                "input_schema"
+            ]
+        },
+        "security": {
+            "type": "object",
+            "properties": {
+                "role": {
+                    "type": "string",
+                    "description": "OPA role required to access this agent"
+                }
+            }
+        },
+        "owner": {
+            "type": "string",
+            "description": "Team or individual responsible for this agent"
+        }
+    },
+    "required": [
+        "id",
+        "name",
+        "version",
+        "description",
+        "capabilities",
+        "interface"
+    ]
+}

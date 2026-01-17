@@ -1,0 +1,25 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "id": null,
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "cortexia-prometheus" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "targets": [
+        { "expr": "up", "legendFormat": "{{job}}", "refId": "A" }
+      ],
+      "title": "Targets UP (up metric)",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "tags": ["cortexia"],
+  "time": { "from": "now-15m", "to": "now" },
+  "timezone": "browser",
+  "title": "CortexIA - Platform Overview",
+  "uid": "cortexia-platform",
+  "version": 1
+}

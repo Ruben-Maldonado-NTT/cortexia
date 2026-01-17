@@ -1,0 +1,29 @@
+services:
+  cortexia-litellm:
+    image: ghcr.io/berriai/litellm:main-v1.34.0
+    container_name: cortexia-litellm
+    ports:
+      - "${LITELLM_PORT:-4000}:4000"
+    volumes:
+      - ./../foundation/models/litellm/config.yaml:/app/config.yaml
+    environment:
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-cortexia-admin-key}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-cortexia}:${POSTGRES_PASSWORD:-cortexia123}@cortexia-postgres:5432/${POSTGRES_DB:-litellm}
+      - SERVER_ROOT_PATH=/litellm
+    depends_on:
+      - cortexia-postgres
+    command: [ "--config", "/app/config.yaml", "--port", "4000", "--detailed_debug" ]
+    networks:
+      - cortexia-net
+    restart: unless-stopped
+
+  cortexia-ollama:
+    image: ollama/ollama:latest
+    container_name: cortexia-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - cortexia-net
+    restart: unless-stopped

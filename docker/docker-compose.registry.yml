@@ -1,0 +1,11 @@
+services:
+  cortexia-registry:
+    build:
+      context: ../foundation/registry
+      dockerfile: Dockerfile
+    container_name: cortexia-registry
+    ports:
+      - "${REGISTRY_PORT:-8090}:8090"
+    networks:
+      - cortexia-net
+    restart: unless-stopped

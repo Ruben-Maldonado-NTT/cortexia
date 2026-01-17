@@ -4,6 +4,10 @@ include:
   - docker-compose.foundation.yml
   - docker-compose.observability.yml
   - docker-compose.storage.yml
+  - docker-compose.security.yml
+  - docker-compose.models.yml
+  - docker-compose.registry.yml
+  - docker-compose.mlops.yml
 
 networks:
   cortexia-net:
@@ -14,3 +18,5 @@ volumes:
   minio-data:
   qdrant-data:
   neo4j-data:
+  postgres-data:
+  ollama-data:

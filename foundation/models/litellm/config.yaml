@@ -1,0 +1,23 @@
+model_list:
+  - model_name: fake-model
+    litellm_params:
+      model: openai/fake
+      api_key: fake-key
+      api_base: https://example.com
+
+  # Example for Azure OpenAI (Uncomment when ready)
+  # - model_name: gpt-3.5-turbo
+  #   litellm_params:
+  #     model: azure/gpt-35-turbo
+  #     api_base: os.environ/AZURE_API_BASE
+  #     api_key: os.environ/AZURE_API_KEY
+  #     api_version: "2023-05-15"
+
+  # Example for Ollama (Host networking or internal DNS needed)
+  - model_name: local-llama
+    litellm_params:
+      model: ollama/llama3
+      api_base: http://cortexia-ollama:11434
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY

@@ -25,7 +25,9 @@ services:
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
     volumes:
       - grafana-data:/var/lib/grafana
-      - ../foundation/observability/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ../foundation/observability/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ../foundation/observability/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ../foundation/observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
     ports:
       - "${GRAFANA_PORT:-3000}:3000"
     networks:

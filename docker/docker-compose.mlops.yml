@@ -1,0 +1,22 @@
+services:
+  cortexia-mlflow:
+    build:
+      context: ../foundation/mlops
+      dockerfile: Dockerfile.mlflow
+    container_name: cortexia-mlflow
+    ports:
+      - "5000:5000"
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=postgresql://${POSTGRES_USER:-cortexia}:${POSTGRES_PASSWORD:-cortexia123}@cortexia-postgres:5432/${POSTGRES_DB:-litellm}
+      - MLFLOW_S3_ENDPOINT_URL=http://cortexia-minio:9000
+      - MLFLOW_S3_IGNORE_TLS=true
+      - AWS_ACCESS_KEY_ID=${MINIO_USER:-minio}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_PASSWORD:-minio123}
+    command: >
+      mlflow server --backend-store-uri postgresql://${POSTGRES_USER:-cortexia}:${POSTGRES_PASSWORD:-cortexia123}@cortexia-postgres:5432/${POSTGRES_DB:-litellm} --default-artifact-root s3://mlflow/ --host 0.0.0.0 --port 5000
+    networks:
+      - cortexia-net
+    depends_on:
+      - cortexia-postgres
+      - cortexia-minio
+    restart: unless-stopped

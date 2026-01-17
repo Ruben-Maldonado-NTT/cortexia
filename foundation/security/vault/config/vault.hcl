@@ -1,0 +1,13 @@
+storage "file" {
+  path = "/vault/file"
+}
+
+listener "tcp" {
+  address     = "0.0.0.0:8202"
+  tls_disable = "true"
+}
+
+default_lease_ttl = "168h"
+max_lease_ttl = "720h"
+ui = true
+api_addr = "http://0.0.0.0:8202"

@@ -1,0 +1,35 @@
+services:
+  cortexia-vault:
+    image: hashicorp/vault:1.15
+    container_name: cortexia-vault
+    ports:
+      - "${VAULT_PORT:-8200}:8202"
+    environment:
+      VAULT_ADDR: 'http://0.0.0.0:8202'
+      VAULT_API_ADDR: 'http://0.0.0.0:8202'
+    volumes:
+      - ./../foundation/security/vault/config:/vault/config
+      - ./../foundation/security/vault/data:/vault/file
+    cap_add:
+      - IPC_LOCK
+    entrypoint: /bin/sh
+    command: -c "vault server -config=/vault/config/vault.hcl"
+    networks:
+      - cortexia-net
+    restart: unless-stopped
+
+  cortexia-opa:
+    image: openpolicyagent/opa:latest
+    container_name: cortexia-opa
+    ports:
+      - "${OPA_PORT:-8181}:8181"
+    command:
+      - "run"
+      - "--server"
+      - "--addr=0.0.0.0:8181"
+      - "/policies"
+    volumes:
+      - ./../foundation/security/opa/policy:/policies
+    networks:
+      - cortexia-net
+    restart: unless-stopped
