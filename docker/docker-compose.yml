@@ -8,6 +8,8 @@ include:
   - docker-compose.models.yml
   - docker-compose.registry.yml
   - docker-compose.mlops.yml
+  - docker-compose.orchestration.yml
+  - docker-compose.rag.yml
 
 networks:
   cortexia-net:

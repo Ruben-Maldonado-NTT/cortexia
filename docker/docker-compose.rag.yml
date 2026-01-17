@@ -1,0 +1,19 @@
+services:
+  cortexia-rag:
+    build:
+      context: ../foundation/rag
+      dockerfile: Dockerfile
+    container_name: cortexia-rag
+    ports:
+      - "8096:8096"
+    environment:
+      - QDRANT_URL=http://cortexia-qdrant:6333
+      - OPENAI_API_BASE=http://cortexia-litellm:4000
+      - OPENAI_API_KEY=${LITELLM_MASTER_KEY:-sk-cortexia-admin-key}
+      # Haystack specific env vars if needed
+    depends_on:
+      - cortexia-qdrant
+      - cortexia-litellm
+    networks:
+      - cortexia-net
+    restart: unless-stopped

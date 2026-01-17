@@ -1,0 +1,5 @@
+fastapi
+uvicorn[standard]
+haystack-ai
+qdrant-haystack
+python-dotenv

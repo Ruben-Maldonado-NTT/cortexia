@@ -13,10 +13,10 @@ model_list:
   #     api_key: os.environ/AZURE_API_KEY
   #     api_version: "2023-05-15"
 
-  # Example for Ollama (Host networking or internal DNS needed)
+  # Local lightweight model via Ollama
   - model_name: local-llama
     litellm_params:
-      model: ollama/llama3
+      model: ollama/tinyllama
       api_base: http://cortexia-ollama:11434
 
 general_settings:

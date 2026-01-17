@@ -1,0 +1,18 @@
+services:
+  cortexia-orchestrator:
+    build:
+      context: ../foundation/orchestration
+      dockerfile: Dockerfile
+    container_name: cortexia-orchestrator
+    ports:
+      - "8095:8095"
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-cortexia}:${POSTGRES_PASSWORD:-cortexia123}@cortexia-postgres:5432/${POSTGRES_DB:-litellm}
+      - OPENAI_API_BASE=http://cortexia-litellm:4000
+      - OPENAI_API_KEY=${LITELLM_MASTER_KEY:-sk-cortexia-admin-key}
+    depends_on:
+      - cortexia-postgres
+      - cortexia-litellm
+    networks:
+      - cortexia-net
+    restart: unless-stopped
