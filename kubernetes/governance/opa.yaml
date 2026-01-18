@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cortexia-opa
+  namespace: cortexia
+  labels:
+    app: cortexia-opa
+spec:
+  ports:
+    - port: 8181
+      name: http
+  selector:
+    app: cortexia-opa
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cortexia-opa
+  namespace: cortexia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cortexia-opa
+  template:
+    metadata:
+      labels:
+        app: cortexia-opa
+    spec:
+      containers:
+        - name: opa
+          image: openpolicyagent/opa:latest
+          args:
+            - "run"
+            - "--server"
+            - "--addr=0.0.0.0:8181"
+            - "/policies"
+          ports:
+            - containerPort: 8181
+              name: http
+          volumeMounts:
+            - name: opa-policy
+              mountPath: /policies/main.rego
+              subPath: main.rego
+      volumes:
+        - name: opa-policy
+          configMap:
+             name: opa-policy-config

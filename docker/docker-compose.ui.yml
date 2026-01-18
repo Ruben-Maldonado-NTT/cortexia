@@ -1,0 +1,47 @@
+services:
+  cortexia-flowise:
+    image: flowiseai/flowise:latest
+    container_name: cortexia-flowise
+    environment:
+      - PORT=3000
+      - HOST=0.0.0.0
+      - DATABASE_PATH=/root/.flowise
+      - APIKEY_PATH=/root/.flowise
+      - LOG_PATH=/root/.flowise/logs
+      # LiteLLM Integration
+      - OPENAI_API_BASE=http://cortexia-litellm:4000/v1
+    volumes:
+      - flowise-data:/root/.flowise
+    ports:
+      - "3001:3000"
+    networks:
+      - cortexia-net
+    restart: unless-stopped
+
+  cortexia-backstage:
+    image: ghcr.io/backstage/backstage:latest
+    container_name: cortexia-backstage
+    environment:
+      - POSTGRES_HOST=cortexia-postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=cortexia
+      - POSTGRES_PASSWORD=cortexia123
+      - NODE_ENV=development
+      - APP_CONFIG_app_baseUrl=http://localhost:8088/backstage
+      - APP_CONFIG_backend_baseUrl=http://localhost:8088/backstage
+      - APP_CONFIG_backend_database_client=pg
+      - APP_CONFIG_backend_database_connection_host=cortexia-postgres
+      - APP_CONFIG_backend_database_connection_port=5432
+      - APP_CONFIG_backend_database_connection_user=cortexia
+      - APP_CONFIG_backend_database_connection_password=cortexia123
+    volumes:
+      - backstage-data:/app/data
+    networks:
+      - cortexia-net
+    depends_on:
+      - cortexia-postgres
+    restart: unless-stopped
+
+volumes:
+  flowise-data:
+  backstage-data:

@@ -1,0 +1,118 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cortexia-kafka
+  namespace: cortexia
+  labels:
+    app: cortexia-kafka
+spec:
+  ports:
+    - port: 9092
+      name: client
+    - port: 9093
+      name: controller
+  clusterIP: None
+  selector:
+    app: cortexia-kafka
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cortexia-kafka
+  namespace: cortexia
+spec:
+  serviceName: "cortexia-kafka"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cortexia-kafka
+  template:
+    metadata:
+      labels:
+        app: cortexia-kafka
+    spec:
+      containers:
+        - name: kafka
+          image: docker.io/bitnami/kafka:3.6.2-debian-11-r0
+          ports:
+            - containerPort: 9092
+              name: client
+            - containerPort: 9093
+              name: controller
+          env:
+            - name: KAFKA_ENABLE_KRAFT
+              value: "yes"
+            - name: KAFKA_CFG_PROCESS_ROLES
+              value: "broker,controller"
+            - name: KAFKA_CFG_CONTROLLER_LISTENER_NAMES
+              value: "CONTROLLER"
+            - name: KAFKA_CFG_LISTENERS
+              value: "PLAINTEXT://:9092,CONTROLLER://:9093"
+            - name: KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP
+              value: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+            - name: KAFKA_CFG_ADVERTISED_LISTENERS
+              value: "PLAINTEXT://cortexia-kafka-0.cortexia-kafka.cortexia.svc.cluster.local:9092"
+            - name: KAFKA_CFG_CONTROLLER_QUORUM_VOTERS
+              value: "1@cortexia-kafka-0.cortexia-kafka.cortexia.svc.cluster.local:9093"
+            - name: KAFKA_BROKER_ID
+              value: "1"
+            - name: KAFKA_CFG_NODE_ID
+              value: "1"
+            - name: KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE
+              value: "true"
+            - name: KAFKA_KRAFT_CLUSTER_ID
+              value: "cortexia-kafka-cluster"
+          volumeMounts:
+            - name: kafka-data
+              mountPath: /bitnami/kafka
+  volumeClaimTemplates:
+    - metadata:
+        name: kafka-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 5Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cortexia-kafka-ui
+  namespace: cortexia
+  labels:
+    app: cortexia-kafka-ui
+spec:
+  ports:
+    - port: 8080
+      name: http
+  selector:
+    app: cortexia-kafka-ui
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cortexia-kafka-ui
+  namespace: cortexia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cortexia-kafka-ui
+  template:
+    metadata:
+      labels:
+        app: cortexia-kafka-ui
+    spec:
+      containers:
+        - name: kafka-ui
+          image: provectuslabs/kafka-ui:latest
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: KAFKA_CLUSTERS_0_NAME
+              value: "cortexia-cluster"
+            - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
+              value: "cortexia-kafka:9092"
+            - name: DYNAMIC_CONFIG_ENABLED
+              value: "true"

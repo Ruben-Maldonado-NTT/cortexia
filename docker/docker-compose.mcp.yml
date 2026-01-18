@@ -1,0 +1,31 @@
+services:
+  cortexia-mcp-gateway:
+    build:
+      context: ../foundation/mcp-gateway
+      dockerfile: Dockerfile
+    container_name: cortexia-mcp-gateway
+    environment:
+      - OPA_URL=http://cortexia-opa:8181/v1/data/mcp/rbac/allow
+    ports:
+      - "8097:8000"
+    depends_on:
+      - cortexia-opa
+    networks:
+      - cortexia-net
+    restart: unless-stopped
+
+  # MCP Inspector - Visual UI for testing MCP servers
+  cortexia-mcp-inspector:
+    image: ghcr.io/modelcontextprotocol/inspector:latest
+    container_name: cortexia-mcp-inspector
+    environment:
+      - MCP_SERVER_URL=http://cortexia-mcp-gateway:8000/mcp/sse
+      - DANGEROUSLY_OMIT_AUTH=true
+      - HOST=0.0.0.0
+    ports:
+      - "6274:6274"
+    depends_on:
+      - cortexia-mcp-gateway
+    networks:
+      - cortexia-net
+    restart: unless-stopped

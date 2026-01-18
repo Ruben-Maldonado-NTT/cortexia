@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: litellm-config
+  namespace: cortexia
+data:
+  config.yaml: |
+    model_list:
+      - model_name: fake-model
+        litellm_params:
+          model: openai/fake
+          api_key: fake-key
+          api_base: https://example.com
+      - model_name: local-llama
+        litellm_params:
+          model: ollama/tinyllama
+          api_base: http://cortexia-ollama:11434
+    general_settings:
+      master_key: os.environ/LITELLM_MASTER_KEY
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cortexia-litellm
+  namespace: cortexia
+  labels:
+    app: cortexia-litellm
+spec:
+  ports:
+    - port: 4000
+      name: http
+  selector:
+    app: cortexia-litellm
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cortexia-litellm
+  namespace: cortexia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cortexia-litellm
+  template:
+    metadata:
+      labels:
+        app: cortexia-litellm
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "4000"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: litellm
+          image: ghcr.io/berriai/litellm:main-v1.34.0
+          args: ["--config", "/app/config.yaml", "--port", "4000", "--detailed_debug"]
+          ports:
+            - containerPort: 4000
+              name: http
+          env:
+            - name: LITELLM_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: cortexia-secrets
+                  key: litellm-master-key
+            - name: DATABASE_URL
+              value: "postgresql://cortexia:cortexia123@cortexia-postgres:5432/litellm"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config.yaml
+              subPath: config.yaml
+      volumes:
+        - name: config-volume
+          configMap:
+            name: litellm-config

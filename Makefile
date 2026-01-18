@@ -68,6 +68,8 @@ health:
 	@echo "- MinIO Console:http://localhost:$${MINIO_CONSOLE_PORT:-9001}"
 	@echo "- Qdrant:       http://localhost:$${QDRANT_PORT:-6333}"
 	@echo "- Neo4j:        http://localhost:$${NEO4J_HTTP_PORT:-7474}"
+	@echo "- Opik:         http://localhost:$${PROXY_PORT:-8088}/opik/"
+	@echo "- OpenMetadata: http://localhost:$${PROXY_PORT:-8088}/openmetadata/"
 	@echo ""
 	@echo "Containers:"
 	@$(DC) ps

@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cortexia-rag
+  namespace: cortexia
+  labels:
+    app: cortexia-rag
+spec:
+  ports:
+    - port: 8096
+      name: http
+  selector:
+    app: cortexia-rag
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cortexia-rag
+  namespace: cortexia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cortexia-rag
+  template:
+    metadata:
+      labels:
+        app: cortexia-rag
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8096"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: rag
+          image: cortexia/rag:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8096
+              name: http
+          env:
+            - name: QDRANT_URL
+              value: "http://cortexia-qdrant:6333"
+            - name: OPENAI_API_BASE
+              value: "http://cortexia-litellm:4000"
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: cortexia-secrets
+                  key: litellm-master-key

@@ -1,0 +1,49 @@
+services:
+  # Kong Gateway - API Management
+  cortexia-kong:
+    image: kong/kong-gateway:3.5
+    container_name: cortexia-kong
+    environment:
+      - KONG_DATABASE=postgres
+      - KONG_PG_HOST=cortexia-postgres
+      - KONG_PG_PORT=5432
+      - KONG_PG_USER=${POSTGRES_USER:-cortexia}
+      - KONG_PG_PASSWORD=${POSTGRES_PASSWORD:-cortexia123}
+      - KONG_PG_DATABASE=kong
+      - KONG_PROXY_ACCESS_LOG=/dev/stdout
+      - KONG_ADMIN_ACCESS_LOG=/dev/stdout
+      - KONG_PROXY_ERROR_LOG=/dev/stderr
+      - KONG_ADMIN_ERROR_LOG=/dev/stderr
+      - KONG_ADMIN_LISTEN=0.0.0.0:8001
+      - KONG_PROXY_LISTEN=0.0.0.0:8000
+    ports:
+      - "8000:8000" # Proxy
+      - "8001:8001" # Admin API
+    depends_on:
+      - cortexia-postgres
+    networks:
+      - cortexia-net
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "kong", "health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Kong Migrations - Initialize database
+  cortexia-kong-migrations:
+    image: kong/kong-gateway:3.5
+    container_name: cortexia-kong-migrations
+    environment:
+      - KONG_DATABASE=postgres
+      - KONG_PG_HOST=cortexia-postgres
+      - KONG_PG_PORT=5432
+      - KONG_PG_USER=${POSTGRES_USER:-cortexia}
+      - KONG_PG_PASSWORD=${POSTGRES_PASSWORD:-cortexia123}
+      - KONG_PG_DATABASE=kong
+    command: kong migrations bootstrap
+    depends_on:
+      - cortexia-postgres
+    networks:
+      - cortexia-net
+    restart: on-failure

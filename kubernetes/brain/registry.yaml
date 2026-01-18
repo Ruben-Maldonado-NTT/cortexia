@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cortexia-registry
+  namespace: cortexia
+  labels:
+    app: cortexia-registry
+spec:
+  ports:
+    - port: 8090
+      name: http
+  selector:
+    app: cortexia-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cortexia-registry
+  namespace: cortexia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cortexia-registry
+  template:
+    metadata:
+      labels:
+        app: cortexia-registry
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8090"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: registry
+          image: cortexia/registry:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8090
+              name: http

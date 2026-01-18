@@ -1,0 +1,69 @@
+services:
+  # ---- Opik (Tracing & Evaluation) ----
+  cortexia-opik-redis:
+    image: redis:7-alpine
+    container_name: cortexia-opik-redis
+    networks:
+      - cortexia-net
+    restart: unless-stopped
+
+  cortexia-opik-backend:
+    image: ghcr.io/comet-ml/opik/opik-backend:latest
+    container_name: cortexia-opik-backend
+    environment:
+      - OPIK_DATABASE_URL=jdbc:postgresql://cortexia-postgres:5432/opik
+      - OPIK_DATABASE_USERNAME=${POSTGRES_USER:-cortexia}
+      - OPIK_DATABASE_PASSWORD=${POSTGRES_PASSWORD:-cortexia123}
+      - OPIK_REDIS_URL=redis://cortexia-opik-redis:6379
+    networks:
+      - cortexia-net
+    depends_on:
+      - cortexia-postgres
+      - cortexia-opik-redis
+    restart: unless-stopped
+
+  cortexia-opik-frontend:
+    image: ghcr.io/comet-ml/opik/opik-frontend-comet:latest
+    container_name: cortexia-opik-frontend
+    environment:
+      - VITE_API_URL=/opik/api
+    networks:
+      - cortexia-net
+    depends_on:
+      - cortexia-opik-backend
+    restart: unless-stopped
+
+  # ---- OpenMetadata (Governance & Catalog) ----
+  # Note: Minimal setup for development
+  cortexia-governance-search:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+    container_name: cortexia-governance-search
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    networks:
+      - cortexia-net
+    restart: unless-stopped
+
+  cortexia-openmetadata:
+    image: docker.getcollate.io/openmetadata/server:1.3.1
+    container_name: cortexia-openmetadata
+    environment:
+      - DB_DRIVER_CLASS=org.postgresql.Driver
+      - DB_SCHEME=postgresql
+      - DB_USE_SSL=false
+      - DB_USER=${POSTGRES_USER:-cortexia}
+      - DB_USER_PASSWORD=${POSTGRES_PASSWORD:-cortexia123}
+      - DB_HOST=cortexia-postgres
+      - DB_PORT=5432
+      - OM_DATABASE=openmetadata_db
+      - SEARCH_TYPE=elasticsearch
+      - SEARCH_HOST=cortexia-governance-search
+      - SEARCH_PORT=9200
+    networks:
+      - cortexia-net
+    depends_on:
+      - cortexia-postgres
+      - cortexia-governance-search
+    restart: unless-stopped

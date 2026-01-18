@@ -1,0 +1,123 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cortexia-ingress
+  namespace: cortexia
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+    # 1. API Services (Path-based on localhost)
+    - http:
+        paths:
+          - path: /agents(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: cortexia-orchestrator
+                port:
+                  number: 8095
+          - path: /rag(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: cortexia-rag
+                port:
+                  number: 8096
+          - path: /api(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: cortexia-kong
+                port:
+                  number: 8000
+
+    # 2. UI Services (Host-based to avoid SPA subpath issues)
+    - host: flowise.localhost
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cortexia-flowise
+                port:
+                  number: 3000
+    
+    - host: backstage.localhost
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cortexia-backstage
+                port:
+                  number: 7007
+
+    - host: opik.localhost
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cortexia-opik-frontend
+                port:
+                  number: 80
+
+    - host: litellm.localhost
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cortexia-litellm
+                port:
+                  number: 4000
+
+    - host: neo4j.localhost
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cortexia-neo4j
+                port:
+                  number: 7474
+
+    - host: minio.localhost
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cortexia-minio
+                port:
+                  number: 9001
+
+    - host: grafana.localhost
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cortexia-grafana
+                port:
+                  number: 3000
+
+    - host: prometheus.localhost
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cortexia-prometheus
+                port:
+                  number: 9000

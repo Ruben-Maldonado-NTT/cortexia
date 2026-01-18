@@ -10,6 +10,12 @@ include:
   - docker-compose.mlops.yml
   - docker-compose.orchestration.yml
   - docker-compose.rag.yml
+  - docker-compose.gateway.yml
+  - docker-compose.events.yml
+  - docker-compose.mcp.yml
+  - docker-compose.ai-platform.yml
+  - docker-compose.ui.yml
+  - docker-compose.governance.yml
 
 networks:
   cortexia-net:
@@ -22,3 +28,7 @@ volumes:
   neo4j-data:
   postgres-data:
   ollama-data:
+  kafka-data:
+  jupyter-data:
+  flowise-data:
+  backstage-data:

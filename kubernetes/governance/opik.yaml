@@ -1,0 +1,119 @@
+# Opik Redis
+apiVersion: v1
+kind: Service
+metadata:
+  name: cortexia-opik-redis
+  namespace: cortexia
+spec:
+  ports:
+    - port: 6379
+  selector:
+    app: cortexia-opik-redis
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cortexia-opik-redis
+  namespace: cortexia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cortexia-opik-redis
+  template:
+    metadata:
+      labels:
+        app: cortexia-opik-redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+
+---
+# Opik Backend
+apiVersion: v1
+kind: Service
+metadata:
+  name: cortexia-opik-backend
+  namespace: cortexia
+spec:
+  ports:
+    - port: 8080
+  selector:
+    app: cortexia-opik-backend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cortexia-opik-backend
+  namespace: cortexia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cortexia-opik-backend
+  template:
+    metadata:
+      labels:
+        app: cortexia-opik-backend
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/comet-ml/opik/opik-backend:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: OPIK_DATABASE_URL
+              value: "jdbc:postgresql://cortexia-postgres:5432/opik"
+            - name: OPIK_DATABASE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: cortexia-secrets
+                  key: postgres-user
+            - name: OPIK_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cortexia-secrets
+                  key: postgres-password
+            - name: OPIK_REDIS_URL
+              value: "redis://cortexia-opik-redis:6379"
+
+---
+# Opik Frontend
+apiVersion: v1
+kind: Service
+metadata:
+  name: cortexia-opik-frontend
+  namespace: cortexia
+spec:
+  ports:
+    - port: 80
+      targetPort: 5173 
+  selector:
+    app: cortexia-opik-frontend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cortexia-opik-frontend
+  namespace: cortexia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cortexia-opik-frontend
+  template:
+    metadata:
+      labels:
+        app: cortexia-opik-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: ghcr.io/comet-ml/opik/opik-frontend-comet:latest
+          ports:
+            - containerPort: 5173
+          env:
+            - name: VITE_API_URL
+              value: "/opik/api"

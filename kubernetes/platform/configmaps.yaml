@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cortexia-config
+  namespace: cortexia
+data:
+  # Environment
+  CORTEXIA_ENV: "production"
+  
+  # Ports
+  LITELLM_PORT: "4000"
+  OPIK_PORT: "8080" # Internal port
+  
+  # Service URLs (Internal K8s DNS)
+  POSTGRES_HOST: "cortexia-postgres.cortexia.svc.cluster.local"
+  QDRANT_HOST: "cortexia-qdrant.cortexia.svc.cluster.local"
+  REDIS_HOST: "cortexia-redis.cortexia.svc.cluster.local"

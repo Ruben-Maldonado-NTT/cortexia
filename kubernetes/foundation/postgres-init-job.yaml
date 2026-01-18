@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgres-init-db
+  namespace: cortexia
+spec:
+  template:
+    spec:
+      containers:
+      - name: psql
+        image: postgres:15-alpine
+        env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cortexia-secrets
+              key: postgres-password
+        command:
+        - /bin/sh
+        - -c
+        - |
+          psql -h cortexia-postgres -U cortexia -d postgres -c "CREATE DATABASE flowise;" || echo "Database flowise already exists"
+          psql -h cortexia-postgres -U cortexia -d postgres -c "CREATE DATABASE kong;" || echo "Database kong already exists"
+          psql -h cortexia-postgres -U cortexia -d postgres -c "CREATE DATABASE registry;" || echo "Database registry already exists"
+          psql -h cortexia-postgres -U cortexia -d postgres -c "CREATE DATABASE opik;" || echo "Database opik already exists"
+      restartPolicy: OnFailure
+  backoffLimit: 4

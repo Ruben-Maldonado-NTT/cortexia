@@ -1,0 +1,49 @@
+services:
+  # Kafka (KRaft mode - no Zookeeper)
+  cortexia-kafka:
+    image: bitnami/kafka:latest
+    container_name: cortexia-kafka
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      # KRaft settings (no Zookeeper)
+      - KAFKA_ENABLE_KRAFT=yes
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:29092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://cortexia-kafka:9092,EXTERNAL://localhost:29092
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@cortexia-kafka:9093
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_NODE_ID=1
+      # Auto-create topics for development
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      # Cluster ID (required for KRaft)
+      - KAFKA_KRAFT_CLUSTER_ID=cortexia-kafka-cluster
+    volumes:
+      - kafka-data:/bitnami/kafka
+    networks:
+      - cortexia-net
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "kafka-broker-api-versions.sh --bootstrap-server localhost:9092" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Kafka-UI for monitoring
+  cortexia-kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: cortexia-kafka-ui
+    ports:
+      - "8089:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=cortexia-cluster
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=cortexia-kafka:9092
+      - DYNAMIC_CONFIG_ENABLED=true
+    depends_on:
+      - cortexia-kafka
+    networks:
+      - cortexia-net
+    restart: unless-stopped

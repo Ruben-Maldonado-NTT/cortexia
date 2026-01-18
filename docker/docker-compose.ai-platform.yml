@@ -1,0 +1,24 @@
+services:
+  cortexia-jupyter:
+    image: jupyter/scipy-notebook:latest
+    container_name: cortexia-jupyter
+    user: root
+    environment:
+      - JUPYTER_TOKEN=cortexia-secret-token
+      - JUPYTER_ENABLE_LAB=yes
+      - NB_PREFIX=/jupyter
+      # Integration variables
+      - LITELLM_URL=http://cortexia-litellm:4000
+      - QDRANT_URL=http://cortexia-qdrant:6333
+      - REGISTRY_URL=http://cortexia-registry:8090
+      - KAFKA_BOOTSTRAP_SERVERS=cortexia-kafka:9092
+    ports:
+      - "8888:8888"
+    volumes:
+      - jupyter-data:/home/jovyan/work
+    networks:
+      - cortexia-net
+    restart: unless-stopped
+
+volumes:
+  jupyter-data:
